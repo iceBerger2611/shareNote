@@ -1,6 +1,10 @@
 import express from "express";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
+const port = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
   const date = new Date();
@@ -11,6 +15,6 @@ app.get("/", (req, res) => {
   res.send(format);
 });
 
-app.listen(3000, () => {
-  console.log(`listening on port 3000`);
+app.listen(port, () => {
+  console.log(`listening on port ${port}`);
 });
