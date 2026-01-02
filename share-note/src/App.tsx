@@ -11,11 +11,7 @@ function App() {
   const socketRef = useRef<Socket | null>(null);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const input = e.currentTarget;
-    if (input.value) {
-      setCurrentMsg(input.value);
-    }
+    setCurrentMsg(e.target.value);
   };
 
   const onClick = () => {
