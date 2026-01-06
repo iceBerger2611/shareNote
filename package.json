@@ -1,0 +1,15 @@
+{
+  "name": "shareNote",
+  "private": true,
+  "workspaces": [
+    "server",
+    "share-note",
+    "shared"
+  ],
+  "scripts": {
+    "dev:shared": "npm run -w shared dev",
+    "dev:server": "npm run -w server dev",
+    "dev:client": "npm run -w share-note dev",
+    "build": "npm run -w shared build && npm run -w server build && npm run -w share-note build"
+  }
+}
