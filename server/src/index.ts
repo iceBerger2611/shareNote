@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import notesRouter from "./routes/notes.routes";
 
 dotenv.config();
 
@@ -20,14 +21,16 @@ const port = process.env.PORT || 3000;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-app.get("/", (_, res) => {
+/* app.get("/", (_, res) => {
   const date = new Date();
   const format = `res sent at ${date.getDay()}/${
     date.getMonth() + 1
   }/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
   console.log(format);
   res.sendFile(join(__dirname, "index.html"));
-});
+}); */
+
+app.use(notesRouter)
 
 io.on("connection", (socket) => {
   console.log("a user connected");
