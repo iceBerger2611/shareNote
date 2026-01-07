@@ -30,7 +30,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
   res.sendFile(join(__dirname, "index.html"));
 }); */
 
-app.use(notesRouter)
+app.use(express.json());
+app.use("/notes", notesRouter);
 
 io.on("connection", (socket) => {
   console.log("a user connected");
