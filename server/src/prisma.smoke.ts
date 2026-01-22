@@ -1,5 +1,9 @@
 import { prisma } from "./prisma";
 
+async function test1() {
+  
+}
+
 async function main() {
   const created = await prisma.note.create({
     data: { title: "Smoke test", content: "Prisma is working." },

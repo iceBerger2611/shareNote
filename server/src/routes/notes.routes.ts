@@ -1,72 +1,75 @@
-import { RequestHandler, Router } from "express";
+import { RequestHandler, Router, Response } from "express";
+import { z, ZodError } from "zod";
 import { prisma } from "../prisma";
-import {
-  createNoteSchema,
-  updateNoteSchema,
-  type createNote,
-  type updateNote,
-} from "@app/shared";
+import { parseId } from "../utils";
+import { createNoteSchema } from "@app/shared/schemas/createNoteSchema";
+import { updateNoteSchema } from "@app/shared/schemas/updateNoteSchema";
+import { type createNote, type updateNote } from "@app/shared";
 
 type NoteIdParams = { id: string };
 
-const verifyReqData = async (reqData: {
-  id?: string;
-  createNoteData?: createNote;
-  updateNoteData?: updateNote;
-}) => {
-  if (reqData.id) {
-    const convertedId = Number.parseInt(reqData.id, 10);
-    if (Number.isNaN(convertedId)) throw new Error("invalid id");
-  }
-  if (reqData.createNoteData) {
-    const result = await createNoteSchema.safeParseAsync(
-      reqData.createNoteData
-    );
-    if (!result.success) throw new Error("invalid create note value/s");
-  }
-  if (reqData.updateNoteData) {
-    const result = await updateNoteSchema.safeParseAsync(
-      reqData.updateNoteData
-    );
-    if (!result.success) throw new Error("invalid update note value/s");
-  }
-};
+const isPrismaNotFound = (e: unknown): e is { code: string } =>
+  typeof e === "object" &&
+  e !== null &&
+  "code" in e &&
+  (e as any).code === "P2025";
+
+const createBodySchema = z.object({ noteValues: createNoteSchema });
+const updateBodySchema = z.object({ noteValues: updateNoteSchema });
 
 const notesRouter = Router();
 
+const catchHandler = (err: unknown, res: Response) => {
+  console.log(err);
+  if (isPrismaNotFound(err)) return res.status(404).json({ error: "Not found" });
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      error: "Invalid request",
+      details: err.flatten(),
+    });
+  }
+
+  if (
+    err instanceof Error &&
+    err.message.toLowerCase().includes("invalid id")
+  ) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  return res.status(500).json({ error: "Internal server error" });
+};
+
 const getAllNotes: RequestHandler<{}> = async (_req, res) => {
   try {
-    const notes = await prisma.note.findMany();
-    res.status(200).send(notes);
+    const notes = await prisma.note.findMany({ orderBy: { id: 'asc' } });
+    res.status(200).json(notes);
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" })
-    console.error(error)
+    return catchHandler(error, res);
   }
 };
 
-const getAllNoteTitles: RequestHandler<{}> = async (_req, res) => {
+const getTitles: RequestHandler<{}> = async (_req, res) => {
   try {
     const notes = await prisma.note.findMany({
       select: { id: true, title: true },
+      orderBy: { id: "asc" },
     });
-    res.status(200).send(notes);
+    res.status(200).json(notes);
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" })
-    console.error(error)
+    return catchHandler(error, res);
   }
 };
 
 const getNoteByIdParams: RequestHandler<NoteIdParams> = async (req, res) => {
   try {
-    const id = req.params.id;
-    await verifyReqData({ id });
+    const id = parseId(req.params.id);
     const note = await prisma.note.findUnique({
-      where: { id: Number(id) },
+      where: { id },
     });
-    res.status(!!note ? 200 : 404).send(note || "error: record not found");
+    if (!note) return res.status(404).json({ error: "Not found" });
+    res.status(200).json(note);
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" })
-    console.error(error)
+    return catchHandler(error, res);
   }
 };
 
@@ -75,18 +78,16 @@ const addNewNote: RequestHandler<any, any, { noteValues: createNote }> = async (
   res
 ) => {
   try {
-    const { noteValues: createNoteData } = req.body;
-    await verifyReqData({ createNoteData });
+    const { noteValues } = createBodySchema.parse(req.body);
     const newNote = await prisma.note.create({
       data: {
-        title: createNoteData.title,
-        content: createNoteData.content,
+        title: noteValues.title,
+        content: noteValues.content,
       },
     });
-    res.status(201).send(newNote);
+    res.status(201).json(newNote);
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" })
-    console.error(error)
+    return catchHandler(error, res);
   }
 };
 
@@ -96,39 +97,33 @@ const updateExistingNote: RequestHandler<
   { noteValues: updateNote }
 > = async (req, res) => {
   try {
-    const id = req.params.id;
-    const { noteValues: updateNoteData } = req.body;
-    await verifyReqData({ id, updateNoteData });
-    const newNote = await prisma.note.update({
+    const id = parseId(req.params.id);
+    const { noteValues: updateNoteData } = updateBodySchema.parse(req.body);
+    const updatedNote = await prisma.note.update({
       data: { content: updateNoteData.content },
-      where: { id: Number(id) },
+      where: { id },
     });
-    res
-      .status(!!newNote.id ? 200 : 404)
-      .send(newNote.id || "error: record not found");
+    res.status(200).json(updatedNote);
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" })
-    console.error(error)
+    return catchHandler(error, res);
   }
 };
 
 const deleteNoteById: RequestHandler<NoteIdParams> = async (req, res) => {
   try {
-    const { id } = req.params;
-    await verifyReqData({ id });
+    const id = parseId(req.params.id);
     const note = await prisma.note.delete({
-      where: { id: Number(id) },
+      where: { id },
     });
-    res.status(!!note ? 200 : 404).send(note || "error: record not found");
+    res.status(200).json(note);
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" })
-    console.error(error)
+    return catchHandler(error, res);
   }
 };
 
 notesRouter.get("/", getAllNotes);
 
-notesRouter.get("/allNoteTitles", getAllNoteTitles);
+notesRouter.get("/titles", getTitles);
 
 notesRouter.get("/:id", getNoteByIdParams);
 
