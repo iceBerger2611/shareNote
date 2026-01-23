@@ -1,12 +1,20 @@
 import request from "supertest";
 import express from "express";
-import notesRouter from "./notes.routes";
+import { makeNotesRouter } from "./notes.routes";
 import { prisma } from "../prisma";
 import { testData } from "./test.data";
+import { makeNotesService } from "../services/note.service";
 
 const app = express();
 app.use(express.json());
-app.use("/notes", notesRouter);
+const notesTestService = makeNotesService({
+  events: {
+    noteCreated: () => {},
+    noteDeleted: () => {},
+    noteUpdate: () => {},
+  },
+});
+app.use("/notes", makeNotesRouter({ notesService: notesTestService }));
 
 const getNonExistentId = async () => {
   const created = await prisma.note.create({ data: testData[0] });
@@ -103,7 +111,7 @@ describe("Notes Routes", () => {
       expect(response.status).toEqual(201);
       expect(response.body.content).toEqual(testData[0].content);
       expect(response.body.title).toEqual(testData[0].title);
-      expect(response.body).toHaveProperty('id')
+      expect(response.body).toHaveProperty("id");
 
       const all = await prisma.note.findMany();
       expect(all).toHaveLength(1);

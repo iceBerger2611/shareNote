@@ -1,3 +1,5 @@
+import { type CreateNote } from "@app/shared/types";
+
 export const parseId = (raw: string) => {
   if (!/^\d+$/.test(raw)) throw new Error("invalid id");
   const id = Number(raw);
@@ -5,7 +7,7 @@ export const parseId = (raw: string) => {
   return id;
 };
 
-export const validCreateNote = (serialNumber: number) => ({
+export const validCreateNote = (serialNumber: number): CreateNote => ({
   content: `content${serialNumber}`,
   title: `note${serialNumber}`,
 });

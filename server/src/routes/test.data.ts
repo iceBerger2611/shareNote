@@ -1,4 +1,6 @@
-import { createNote } from "@app/shared";
+import { type CreateNote } from "@app/shared/types";
 import { validCreateNote } from "../utils";
 
-export const testData: createNote[] = [1, 2, 3, 4, 5, 6].map((num) => validCreateNote(num));
+export const testData: CreateNote[] = [1, 2, 3, 4, 5, 6].map((num) =>
+  validCreateNote(num),
+);
