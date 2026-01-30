@@ -5,7 +5,7 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --watch ../shared/dist --ext ts,js --exec \"node --loader ts-node/esm src/index.ts\"",
+    "dev": "nodemon --watch src --watch ../shared --ext ts,js --exec \"tsx --tsconfig tsconfig.json src/index.ts\"",
     "start": "node dist/index.js",
     "build": "tsc -p tsconfig.json",
     "test": "jest --runInBand"

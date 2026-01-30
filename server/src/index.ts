@@ -20,13 +20,13 @@ const io = new Server(server, {
   connectionStateRecovery: {},
 });
 
-registerSocket(io)
+registerSocket(io);
 
-const events = makeEvents(io)
+const events = makeEvents(io);
 
-const notesService = makeNotesService({ events })
+const notesService = makeNotesService({ events });
 
-app.use('/notes', makeNotesRouter({ notesService }))
+app.use("/api/notes", makeNotesRouter({ notesService }));
 
 const port = process.env.PORT || 3000;
 
@@ -44,4 +44,3 @@ server.listen(port, () => {
 //     console.log("user disconnected");
 //   });
 // });
-

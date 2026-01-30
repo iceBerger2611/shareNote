@@ -1,4 +1,4 @@
-import { type CreateNote } from "@app/shared/types";
+import { type CreateNote } from "@shared";
 
 export const parseId = (raw: string) => {
   if (!/^\d+$/.test(raw)) throw new Error("invalid id");

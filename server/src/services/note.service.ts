@@ -1,4 +1,4 @@
-import { Events, type CreateNote, type UpdateNote } from "@app/shared/types";
+import { Events, type CreateNote, type UpdateNote } from "@shared";
 import { prisma } from "../prisma";
 
 export const makeNotesService = (deps: { events: Events }) => ({

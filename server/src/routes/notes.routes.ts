@@ -1,9 +1,12 @@
 import { RequestHandler, Router, Response } from "express";
 import { z, ZodError } from "zod";
 import { parseId } from "../utils";
-import { createNoteSchema } from "@app/shared/schemas/createNoteSchema";
-import { updateNoteSchema } from "@app/shared/schemas/updateNoteSchema";
-import { type CreateNote, type UpdateNote  } from "@app/shared/types";
+import {
+  createNoteSchema,
+  updateNoteSchema,
+  type CreateNote,
+  type UpdateNote,
+} from "@shared";
 import { NotesService } from "../services/note.service";
 
 type NoteIdParams = { id: string };

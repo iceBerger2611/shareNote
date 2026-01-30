@@ -1,6 +1,5 @@
-import { Events } from "@app/shared/types"
+import { ESocketEvents, Events } from "@shared";
 import { Server as IOServer } from "socket.io"
-import { ESocketEvents } from '@app/shared/consts'
 
 export const makeEvents = (io: IOServer): Events => ({
   noteCreated: (note) => io.emit(ESocketEvents["note:created"].toString(), note),

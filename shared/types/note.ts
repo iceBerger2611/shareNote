@@ -1,7 +1,9 @@
+// shared/types/note.ts
+
 import { z } from "zod";
-import { noteSchema } from "@app/shared/schemas/noteSchema";
-import { createNoteSchema } from "@app/shared/schemas/createNoteSchema";
-import { updateNoteSchema } from "@app/shared/schemas/updateNoteSchema";
+import { noteSchema } from "../schemas/noteSchema";
+import { createNoteSchema } from "../schemas/createNoteSchema";
+import { updateNoteSchema } from "../schemas/updateNoteSchema";
 
 export type Note = z.infer<typeof noteSchema>;
 
